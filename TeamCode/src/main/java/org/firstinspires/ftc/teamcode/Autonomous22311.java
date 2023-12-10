@@ -16,38 +16,39 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 @Autonomous
 public class Autonomous22311 extends LinearOpMode {
+    ColorSensor colorSensor;
     @Override
     public void runOpMode() throws InterruptedException {
-        //DistanceSensor Colores = hardwareMap.get(DistanceSensor.class, "Color");//
+        colorSensor = hardwareMap.get(ColorSensor.class, "color_sensor");
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-
+        boolean Tunk = true;
 
         double DISTANCE = 60; // in
-
         waitForStart();
-        Random(40, 0);
+        Random(26, 0);
+        int colorVal = readColor();
+        if ((colorVal == 1) || (colorVal == 2)) {
+            Random(5, 0);
 
-        //double distance = Colores.getDistance(DistanceUnit.CM);//
+        } else {
+            Random(0.1, 150);
+            if ((colorVal == 1) || (colorVal == 2)) {
+                Random(5, 0);
 
+            } else {
+                Random(0.1, 210);
+                Random(5, 0);
 
-        /*if(distance<2.1){
-            telemetry.addData("Imhere", distance);
+            }
         }
-        else{
-            Random(0, 90);
-            if(distance<2.1){
-                telemetry.addData("Imthere", distance);
-
-            }
-            else{
-                Random(0, 180);
-                telemetry.addData("Imzone", distance);
-            }
-        }*/
-
     }
+
+//
+//
+
+    
 
     public double Random(double Xcoord, double ANGLE) {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -71,4 +72,28 @@ public class Autonomous22311 extends LinearOpMode {
 
     }
 
+    public int readColor() {
+        int red = colorSensor.red();
+        int blue = colorSensor.blue();
+        int green = colorSensor.green();
+
+
+        int largerNumber = Math.max(red, blue);
+        int LargestNumberChoice = Math.max(green, largerNumber);
+
+        if (LargestNumberChoice == red) {
+            return 1;
+        }
+
+        else if (LargestNumberChoice == blue){
+            return 2;
+        }
+
+        else if (LargestNumberChoice == green){
+            return 3;
+        }
+
+
+        return 0;
+    }
 }
