@@ -169,17 +169,20 @@ public class DriveTrain223112023 extends LinearOpMode {
 //                Arm.setTargetPosition(lowest_pos);
 //            }
 
+
+            // todo: when at a vertical position; it should break and then if the user continues to press down it breaks
+            // todo: find the -340 and -180;
             int vertical_pos = -270;
             int current_pos = Arm.getCurrentPosition();
             if (arm_move < 0) {
-                if (current_pos < vertical_pos) {
+                if (current_pos < -340) {
                     Arm.setPower(0.5);
                 } else {
                     Arm.setPower(0.1);
                 }
 
             } else if (arm_move > 0) {
-                if (current_pos > vertical_pos) {
+                if (current_pos > -180) {
                     Arm.setPower(-0.5);
                 } else {
                     Arm.setPower(-0.1);
