@@ -75,11 +75,11 @@ public class DriveTrain223112023 extends LinearOpMode {
 
 
             if(gamepad2.a){
-                Gripper.setPosition(1.0);
+                Gripper.setPosition(1);
             }
 
             if(gamepad2.b){
-                Gripper.setPosition(0.25);
+                Gripper.setPosition(0.01);
 
             }
             double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
@@ -206,10 +206,14 @@ public class DriveTrain223112023 extends LinearOpMode {
             telemetry.update();
 
             if (gamepad2.x) {
-                Arm.setPower(0.0);
+                Arm.setTargetPosition(-35);
+                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                Arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
                 Gripper.setPosition(0.01);
                 sleep(2000);
-                Arm.setPower(-0.2);
+//                Arm.setPower(0.2);
             }
 
             // Denominator is the largest motor power (absolute value) or 1
