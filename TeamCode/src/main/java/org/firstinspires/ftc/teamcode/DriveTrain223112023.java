@@ -175,22 +175,28 @@ public class DriveTrain223112023 extends LinearOpMode {
             int vertical_pos = -270;
             int current_pos = Arm.getCurrentPosition();
             if (arm_move < 0) {
-                if (current_pos < -340) {
-                    Arm.setPower(0.5);
+                if (current_pos < -250) {
+                    Arm.setPower(0.7);
                 } else {
                     Arm.setPower(0.1);
                 }
 
             } else if (arm_move > 0) {
                 if (current_pos > -180) {
-                    Arm.setPower(-0.5);
+                    Arm.setPower(-0.7);
                 } else {
                     Arm.setPower(-0.1);
                 }
 
 
             } else {
-                Arm.setPower(0);
+                if (current_pos < -10 && current_pos > -180) {
+                    Arm.setPower(-0.2);
+                } else if (current_pos < -320) {
+                    Arm.setPower(0.2);
+                } else {
+                    Arm.setPower(0);
+                }
 
             }
 
