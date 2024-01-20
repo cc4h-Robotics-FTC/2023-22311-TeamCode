@@ -19,81 +19,26 @@ public class Autonomous22311 extends LinearOpMode {
     ColorSensor colorSensor;
     @Override
     public void runOpMode() throws InterruptedException {
-        colorSensor = hardwareMap.get(ColorSensor.class, "color_sensor");
-
+        Servo Gripper = hardwareMap.get(Servo.class, "Grip");
+        double DISTANCE = 40;
+        double ANGLE = 110;
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        boolean Tunk = true;
-
-        double DISTANCE = 60; // in
-        waitForStart();
-        Random(26, 0);
-        int colorVal = readColor();
-        if ((colorVal == 1) || (colorVal == 2)) {
-            Random(5, 0);
-
-        } else {
-            Random(0.1, 150);
-            if ((colorVal == 1) || (colorVal == 2)) {
-                Random(5, 0);
-
-            } else {
-                Random(0.1, 210);
-                Random(5, 0);
-
-            }
-        }
-    }
-
-//
-//
-
-    
-
-    public double Random(double Xcoord, double ANGLE) {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Trajectory trajectory = drive.trajectoryBuilder(new Pose2d())
-                .forward(Xcoord)
+        Trajectory fwdtrajectory = drive.trajectoryBuilder(new Pose2d())
+                .forward(DISTANCE)
                 .build();
-        drive.followTrajectory(trajectory);
-        drive.turn(Math.toRadians(ANGLE));
-        return Xcoord;
 
+        Trajectory bwdtrajectory = drive.trajectoryBuilder(new Pose2d())
+                .forward(-DISTANCE/10)
+                .build();
+        waitForStart();
 
-
-
-
-
-
-
-
-
-
-
-    }
-
-    public int readColor() {
-        int red = colorSensor.red();
-        int blue = colorSensor.blue();
-        int green = colorSensor.green();
-
-
-        int largerNumber = Math.max(red, blue);
-        int LargestNumberChoice = Math.max(green, largerNumber);
-
-        if (LargestNumberChoice == red) {
-            return 1;
-        }
-
-        else if (LargestNumberChoice == blue){
-            return 2;
-        }
-
-        else if (LargestNumberChoice == green){
-            return 3;
-        }
-
-
-        return 0;
+        if (isStopRequested()) return;
+        Gripper.setPosition(0.01); //Grab Pixel
+        drive.turn(Math.toRadians(ANGLE));//Turn
+        drive.followTrajectory(fwdtrajectory);//move to landing spot
+        Gripper.setPosition(1.);
+        drive.followTrajectory(bwdtrajectory);
+        while (!isStopRequested() && opModeIsActive());
     }
 }
