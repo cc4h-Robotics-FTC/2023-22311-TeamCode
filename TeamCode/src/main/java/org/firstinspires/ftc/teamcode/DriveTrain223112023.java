@@ -2,31 +2,41 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
 public class DriveTrain223112023 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
+        //storing gamepad state for button press
+        Gamepad currentGamepad2 = new Gamepad();
+        Gamepad previousGamepad2 = new Gamepad();
+
+
         boolean LaunchTrue = true;
 //        Servo ClawHangServo = hardwareMap.get(Servo.class, "Hanger");
-        Servo FrontLeftServo = hardwareMap.get(Servo.class, "FLS");
-        Servo Gripper = hardwareMap.get(Servo.class, "Grip");
-        FrontLeftServo.setDirection(Servo.Direction.REVERSE);
-
+        Servo Launcher = hardwareMap.get(Servo.class, "FLS");
+        Servo GripperRight = hardwareMap.get(CRServo.class, "Grip");
+        Servo GripperLeft = hardwareMap.get(CRServo.class, "Grip1");
+        Launcher.setDirection(Servo.Direction.REVERSE);
+        boolean Gripper1 = true;
+        boolean Gripper2 = true;
 //        Servo Fling = hardwareMap.get(Servo.class, "launcher");
 //        Servo grab = hardwareMap.get(Servo.class,"grab");
 //
         // Declare our motors
         // Make sure your ID's match your configuration
         DcMotor frontLeftMotor = hardwareMap.dcMotor.get("frontLeftMotor");
-        DcMotor backLeftMotor= hardwareMap.dcMotor.get("backLeftMotor");
+        DcMotor backLeftMotor = hardwareMap.dcMotor.get("backLeftMotor");
         DcMotor frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
         DcMotor backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
         DcMotor Arm = hardwareMap.dcMotor.get("armMotor");
+        DcMotor ArmRotator = hardwareMap.dcMotor.get("armRotateMotor");
 
         Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -44,6 +54,10 @@ public class DriveTrain223112023 extends LinearOpMode {
         int targetPos = -10;
         while (opModeIsActive()) {
 
+            // save gamepad state for future button press use
+            previousGamepad2.copy(currentGamepad2);
+            currentGamepad2.copy(gamepad2);
+
 //            if(gamepad1.left_bumper){
 //                if(LaunchTrue = true) {
 //                    time = getRuntime();
@@ -55,166 +69,193 @@ public class DriveTrain223112023 extends LinearOpMode {
 //                    LaunchTrue = false;
 //                }
 //
-//                else if(LaunchTrue = false){
+//                else if(LunchTrue = false){
 //                    FrontLeftServo.setPosition(0.0);
 //            }
 //
 //
 //            }
 
-            if (gamepad2.y) {
-                FrontLeftServo.setPosition(0.0);
+            if (currentGamepad2.y && !previousGamepad2.y) {
+                Launcher.setPosition(0.0);
                 time = getRuntime();
-                FrontLeftServo.setPosition(0.0);
+                Launcher.setPosition(0.0);
                 if (getRuntime() - time > 2000) {
-                    FrontLeftServo.setPosition(1.0);
+                    Launcher.setPosition(1.0);
                 }
             }
-
-
-
-
-            if(gamepad2.a){
-                Gripper.setPosition(1);
+            if (currentGamepad2.left_bumper && !previousGamepad2.left_bumper) {
+                GripperLeft.setPower(0);
+                GripperRight.setPower(1);
             }
 
-            if(gamepad2.b){
-                Gripper.setPosition(0.01);
+            else if (currentGamepad2.right_bumper && !previousGamepad2.left_bumper) {
+                GripperLeft.setPower(1);
+                GripperRight.setPower(0);
+            }
 
+            else {
+                GripperLeft.setPower(0.5);
+                GripperRight.setPower(0.5);
             }
             double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
-//            double arm_down = gamepad2.left_trigger;
-//            double arm_up = gamepad2.right_trigger;
-
-//            if (arm_down>0){
-//                double arm_power = Arm.getPower(); // get the power and adjust them based on the Arm Power
-//                telemetry.addData("Arm power", arm_power);
-//                Arm.setPower(0.3);
-//            }else if (arm_up>0){
-//                Arm.setPower(-0.3);
-//                double arm_power = Arm.getPower(); // get the power and adjust them based on the Arm Power
-//                telemetry.addData("Arm power", arm_power);
-//            } else {
-//                Arm.setPower(-0.2);
-//                double arm_power = Arm.getPower(); // get the power and adjust them based on the Arm Power
-//                telemetry.addData("Arm power", arm_power);
-//            }
 
 
-//            int vertical_pos = -210;
-//            int lowest_pos = -40;
-//            double handPower = 0.;
-//
-//            final double maxHandPower = 1.0;
-//            final double powerIncrement = 0.55;
-//            final double powerDecrease = 0.7;
+            telemetry.addData("GripperLeft", GripperLeft.getPosition());
+            telemetry.addData("GripperRight", GripperRight.getPosition());
 
-
+            double armZ = gamepad2.right_stick_y;
             double arm_move = gamepad2.left_stick_y;
-//            double arm_up = gamepad2.left_stick_y;
-//            if (arm_up > 0) {
-//                int position = Arm.getCurrentPosition();
-//                if (position<vertical_pos){
-////                    handPower -= powerIncrement/3 * arm_up;
-//                    position -= powerIncrement;
-//                    Arm.setTargetPosition(position);
+            int current_pos = Arm.getCurrentPosition();
 //
+//
+//            // claw behavior
+//            if(current_pos < 190) { // arm is at the front of the robot
+//                if (currentGamepad2.left_trigger > 0) {
+//                    ArmRotator.setPower(0.8);
+//                } else if (currentGamepad2.right_trigger > 0) {
+//                    ArmRotator.setPower(-0.3);
 //                } else {
-//                    handPower -= powerIncrement * arm_up;
+//                    if (ArmRotator.getCurrentPosition() < -260) {
+//                        ArmRotator.setPower(0.05);
+//                    }
+////                    else {
+////                        ArmRotator.setPower(0.65);
+////                    }`m+
 //                }
-//                if (handPower < -1) {
-//                    handPower = -1;
+//            } else if(current_pos>190 && current_pos < 250) { // arm is at the back of the robot
+//                if (currentGamepad2.left_trigger > 0) {
+//                    ArmRotator.setPower(0.7);
+//                } else if (currentGamepad2.right_trigger > 0) {
+//                    ArmRotator.setPower(-0.7);
+//                } else {
+//                    ArmRotator.setPower(-0.05);
 //                }
-//                Arm.setPower(handPower);
-//            } else if (arm_down < 0) {
-//                handPower += -1*powerDecrease * arm_down;
-//                if (handPower > maxHandPower) {
-//                    handPower = maxHandPower;
+//            } else if (current_pos >= 250) { // lower the claw
+//                if (currentGamepad2.left_trigger > 0) {
+//                    ArmRotator.setPower(0.2);
+//                } else if (currentGamepad2.right_trigger > 0) {
+//                    ArmRotator.setPower(-0.8);
+//                } else {
+//                    ArmRotator.setPower(-0.05);
 //                }
-//                Arm.setPower(handPower);
 //            } else {
-//                int position = Arm.getCurrentPosition();
-//                Arm.setTargetPosition(position);
-//                Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//
-//            }
-//            int current_pos = Arm.getCurrentPosition();
-//            if (current_pos < lowest_pos) {
-//                Arm.setTargetPosition(lowest_pos);
+//                ArmRotator.setPower(0.1); // just a bit of power to prevent dead falling, dead falling: sudden power cut
 //            }
 
 
-//            final double pos_change = 0.55;
-////            final double powerDecrease = 0.7;
-//
-//            if (arm_up > 0) {
-//                int position = Arm.getCurrentPosition();
-//                Arm.setTargetPosition(position + pos_change);
-//            } else if (arm_down < 0) {
-//                handPower += -1*powerDecrease * arm_down;
-//                if (handPower > maxHandPower) {
-//                    handPower = maxHandPower;
+            // claw behavior
+            int Stability = ArmRotator.getCurrentPosition();
+            ArmRotator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//            if (current_pos < 190) { // arm is at the front of the robot
+//                if (currentGamepad2.left_trigger > 0) {
+//                    ArmRotator.setPower(gamepad2.left_trigger/1.5);
+//                } else if (currentGamepad2.right_trigger > 0) {
+//                    ArmRotator.setPower(-gamepad2.right_trigger/1.5);
 //                }
-//                Arm.setPower(handPower);
-//            } else {
-//                int position = Arm.getCurrentPosition();
-//                Arm.setTargetPosition(position);
-//                Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//
-//            }
-//            int current_pos = Arm.getCurrentPosition();
-//            if (current_pos < lowest_pos) {
-//                Arm.setTargetPosition(lowest_pos);
-//            }
+//            } else if (current_pos > 190 && current_pos < 250) { // arm is at the back of the robot
+//                if (currentGamepad2.left_trigger > 0) {
+//                    ArmRotator.setPower(gamepad2.left_trigger/1.5);
+//                } else if (currentGamepad2.right_trigger > 0) {
+//                    ArmRotator.setPower(-gamepad2.right_trigger/1.5);
+//                }
+//            } else if (current_pos >= 250) { // lower the claw
+//                if (currentGamepad2.left_trigger > 0) {
+//                    ArmRotator.setPower(gamepad2.left_trigger/1.5);
+//                } else if (currentGamepad2.right_trigger > 0) {
+//                    ArmRotator.setPower(-gamepad2.right_trigger/1.5);
+//                }
+            if (gamepad2.left_trigger > 0) {
+                ArmRotator.setPower(gamepad2.left_trigger / 1.5);
+            } else if (gamepad2.right_trigger > 0) {
+                ArmRotator.setPower(-gamepad2.right_trigger/1.8);
+            } else {
+                ArmRotator.setPower(0.1); // just a bit of power to prevent dead falling, dead falling: sudden power cut
+            }
 
+            if(gamepad2.a){
+                ArmRotator.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+                ArmRotator.setTargetPosition(Stability+10);
+            }
+            if(gamepad2.b){
+                ArmRotator.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
+
+
+            telemetry.addData("Left Trigger", gamepad2.left_trigger);
 
             // todo: when at a vertical position; it should break and then if the user continues to press down it breaks
             // todo: find the -340 and -180;
-            int vertical_pos = -270;
-            int current_pos = Arm.getCurrentPosition();
-            if (arm_move < 0) {
-                if (current_pos < -250) {
-                    Arm.setPower(0.7);
-                } else {
-                    Arm.setPower(0.1);
-                }
-
-            } else if (arm_move > 0) {
-                if (current_pos > -180) {
-                    Arm.setPower(-0.7);
-                } else {
-                    Arm.setPower(-0.1);
-                }
+            // i luv 69
 
 
-            } else {
-                if (current_pos < -10 && current_pos > -180) {
-                    Arm.setPower(-0.2);
-                } else if (current_pos < -320) {
-                    Arm.setPower(0.2);
-                } else {
-                    Arm.setPower(0);
-                }
+            int vertical_pos = 255;
+//            if (arm_move < 0) { // raise arm
+//                if (current_pos < 190) {
+//                    Arm.setPower(0.75); // raise arm steadily with great power
+//                } else if (current_pos >= 190) {
+//                    Arm.setPower(0.15); // we are past vertical piont, we don't need too much power
+//                }
+//            } else{
+//                Arm.setPower(0.1);// to go down code; makes it such that when the robot goes down, it isn't very fast
+//            }
+//
+//
+//
+//            if (arm_move > 0) { // lower arm
+//                if (current_pos > 190) {
+//                    Arm.setPower(-0.65);
+//                } else {
+//                    Arm.setPower(-0.05); //
+//                }
+//            }
+//
+//            if (current_pos < 120 && arm_move == 0) { // default arm behavior
+//                    Arm.setPower(0.1); // to stop the arm from free falling
+//            }
 
-            }
+        if (arm_move < 0) { // raise arm
+            Arm.setPower(-gamepad2.left_stick_y);
 
-//            Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            telemetry.addData("Arm Pwer", Arm.getPower());
+//            if (current_pos < 190) {
+//                Arm.setPower(Math.max(gamepad2.left_stick_y, 0.7)); // raise arm steadily with great power
+//            } else if (current_pos >= 190) {
+//                Arm.setPower(Math.min(gamepad2.left_stick_y, 0.6)); // we are past vertical piont, we don't need too much power
+//            }
+//            else {
+//                Arm.setPower(-gamepad2.left_stick_y/10);// to go down code; makes it such that when the robot goes down, it isn't very fast
+//            }
+        } else if (current_pos > 0) {
+            Arm.setPower(0.1); // prevent dead falling+
+        }
+
+
+        if (arm_move > 0) { // lower arm
+            Arm.setPower(-gamepad2.left_stick_y);
+//            Arm.setPower(-Math.min(gamepad2.left_stick_y, 0.6));
+//            if (current_pos > 190) {
+//                Arm.setPower(-0gamepad2.left_stick_y);
+//            } else {
+//                Arm.setPower(-gamepad2.left_stick_y); //
+//            }
+        }
+
+//        if (current_pos < 120 && arm_move == 0) { // default arm behavior
+//            Arm.setPower(-gamepad2.left_stick_y); // to stop the arm from free falling
+//        }
+
+            telemetry.addData("Arm Pow", Arm.getPower());
             telemetry.addData("Arm Pos", Arm.getCurrentPosition());
+
+            telemetry.addData("ArmClawPow Power", ArmRotator.getPower());
+            telemetry.addData("ArmClawPos", ArmRotator.getCurrentPosition());
+
+            telemetry.addData("LeftStick", currentGamepad2.left_stick_y);
             telemetry.update();
 
-            if (gamepad2.x) {
-                Arm.setTargetPosition(-35);
-                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-                Gripper.setPosition(0.01);
-                sleep(2000);
-//                Arm.setPower(0.2);
-            }
 
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio,
@@ -224,11 +265,13 @@ public class DriveTrain223112023 extends LinearOpMode {
             double backLeftPower = (y - x + rx) / denominator;
             double frontRightPower = (y - x - rx) / denominator;
             double backRightPower = (y + x - rx) / denominator;
+//            double Armpowerrotator = armZ/3;
 
             frontLeftMotor.setPower(frontLeftPower);
             backLeftMotor.setPower(backLeftPower);
             frontRightMotor.setPower(frontRightPower);
             backRightMotor.setPower(backRightPower);
+//            ArmRotator.setPower(Armpowerrotator);
 
 
         }
